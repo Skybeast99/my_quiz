@@ -1,30 +1,34 @@
 import tkinter as tk
 import random
+import time 
 from datetime import datetime
 
 questions = [
     {
         'вопрос': 'Какой из этих типов данных изменяемый?',
-        'ответы': ['tuple', ' list', ' str ', ' int '],
-        'ответ': 'list'
+        'ответы': ['tuple', 'list', 'str', 'int'],
+        'ответ': 'list',
+        'теги': 'коллекции'
     },
     {   
         'вопрос': 'Какой оператор перемножает числа в пайтон?',
-        'ответы': [' x ', ' //', ' * ', ' **'],
-        'ответ': '*'
+        'ответы': ['x', '//', '*', '**'],
+        'ответ': '*',
+        'теги': 'оператор'
         
     },
     {   
         'вопрос': 'какой символ пишется в конце заголовка любого цикла',
-        'ответы': [' []', ' * ', ' ()', ' : '],
-        'ответ': ':'
+        'ответы': ['[]', '*', '()', ':'],
+        'ответ': ':',
+        'теги': 'синтаксис'
     }
 ]
 
 
 class App:
     '''Приложение'''
-    def __init__(self, shuffle_questions=False) -> None:
+    def __init__(self, shuffle_questions=False, shuffle_answers=False) -> None:
         self.window = tk.Tk()
         self.window.bind('<Escape>', lambda _: self.window.destroy())
         self.window.option_add('*Font', ('Consolas', 30))
@@ -35,10 +39,12 @@ class App:
         self.main_frame = tk.Frame(self.window)
         self.main_frame.place(relx=0.5, rely=0.5, anchor='center')
 
+        self.count = len(questions)
         self.question_index = None
         self.correct_answers = None
         self.incorrect_answers = None
         self.shuffle_questions = shuffle_questions
+        self.shuffle_answers = shuffle_answers
 
         self.start()
         self.window.mainloop()
@@ -50,7 +56,7 @@ class App:
 
     def start(self) -> None:
         '''Начинает викторину'''
-        self.time_1 = datetime.now()
+        self.start_time = time.time()
         self.question_index = 0
         self.correct_answers = 0
         self.incorrect_answers = 0
@@ -62,6 +68,10 @@ class App:
     def show_question(self) -> None:
         '''Создает виджеты и наполняет их контентом вопроса'''
         question = questions[self.question_index]
+        random.shuffle(question['ответы'])
+        tk.Label(
+            self.main_frame, text=f'вопрос: {self.question_index + 1}/{self.count}'
+        ).pack()
         tk.Label(self.main_frame, text=question['вопрос']).pack(pady=(0, 30))
         buttons_frame = tk.Frame(self.main_frame)
         buttons_frame.pack()
@@ -88,33 +98,13 @@ class App:
             self.show_result()
 
     def show_result(self) -> None:
-        self.time_2 = datetime.now()
-        self.delta_t = self.time_2 - self.time_1
-        a = str(self.delta_t)
-        s=a.split(':')
-        sp=s[-1].split('.')
-        s[-1]=sp[0]
-        s.append(sp[-1])
-        s=list(map(int,s))
-        if s[-1]>=500:
-            s[-1]=0
-            if s[-2]<59:
-                s[-2]+=1
-            else:
-                s[-2]=0
-                if s[-3]<59:
-                    s[-3]+=1
-                else:
-                    s[-3]=0
-                    if s[-4]<22:
-                        s[-4]+=1
-                    else:
-                        s[-4]=0
-        else:
-            s[-1]=0
-        print(f'{s[0]}:{s[1]}:{s[2]}.{s[3]}')
+        self.end_time = time.time()
+        delta_t = self.end_time - self.start_time
+        hours = int(delta_t // 3600)
+        minutes = int((delta_t % 3600) // 60)
+        seconds = int(delta_t % 60)
         tk.Label(
-            self.main_frame, text=f'время: {s[0]}:{s[1]}:{s[2]}.{s[3]}'
+            self.main_frame, text=f'время: {hours:02}:{minutes:02}:{seconds:02}'
         ).pack()
         tk.Label(
             self.main_frame, text=f'верно: {self.correct_answers}'
