@@ -1,6 +1,7 @@
 import tkinter as tk
 import random
-import time 
+import time
+from PIL import Image, ImageTk
 import os
 
 questions = [
@@ -16,7 +17,7 @@ questions = [
         'ответы': ['x', '//', '*', '**'],
         'ответ': '*',
         'теги': 'оператор',
-        'изображение': 'shlyopa_cool.png'
+        'изображение': '002.png'
         
     },
     {   
@@ -24,7 +25,21 @@ questions = [
         'ответы': ['[]', '*', '()', ':'],
         'ответ': ':',
         'теги': 'синтаксис',
-        'изображение': 'beatle.png'
+        'изображение': '003.png'
+    },
+    {
+        'вопрос': 'какой модуль в пайтон позволяет использовать графику',
+        'ответы': ['random', 'time', 'turtle', 'os'],
+        'ответ': 'turtle',
+        'теги': 'модули',
+        'изображение': '003.png'
+    },
+    {
+        'вопрос': 'при помощи какой функции можно привести строку в число',
+        'ответы': ['int', 'str', 'append', 'pop'],
+        'ответ': 'int',
+        'теги': 'методы',
+        'изображение': '003.png'
     }
 ]
 
@@ -41,6 +56,7 @@ class App:
 
         self.main_frame = tk.Frame(self.window)
         self.main_frame.place(relx=0.5, rely=0.5, anchor='center')
+        self.padding_y = 30
 
         self.count = len(questions)
         self.question_index = None
@@ -58,6 +74,15 @@ class App:
         '''удвляет виджеты из мэйн фрэйм'''
         for widget in self.main_frame.winfo_children():
             widget.destroy()
+
+    def get_widgets_total_hight(self) -> int:
+        total_height = 0
+        '''возвращает высоту всех виджетов в main_frame'''
+        for widget in self.main_frame.winfo_children():
+            widget.update()
+            total_height += widget.winfo_height()  
+            total_height += self.padding_y
+        return total_height
 
     def start(self) -> None:
         '''Начинает викторину'''
@@ -78,11 +103,13 @@ class App:
             self.main_frame, text=f'вопрос: {self.question_index + 1}/{self.count}'
         ).pack()
         tk.Label(self.main_frame, text=question['вопрос']).pack(pady=(0, 30))
+
         image_name = question.get('изображение')
+
         if image_name is not None:
-            file = os.path.join(self.images_path, image_name)
-            photo_image = tk.PhotoImage(file=file)
-            tk.Label(self.main_frame, image=photo_image).pack()
+            image_lable = tk.Label(self.main_frame)
+            image_lable.pack()
+
         buttons_frame = tk.Frame(self.main_frame)
         buttons_frame.pack()
         for answer in question['ответы']:
@@ -91,6 +118,20 @@ class App:
                 text=answer,
                 command=lambda arg=answer: self.on_button(arg)
             ).pack(side='left', ipadx=15, padx=20)
+        
+        if image_name:
+            image_hight = self.window.winfo_screenheight() - self.get_widgets_total_hight()
+            image_hight -= 100
+            file_path = os.path.dirname(__file__)
+            image_file = os.path.join(file_path, 'images', image_name)
+            img = Image.open(image_file)
+            aspect_ratio = img.width / img.height  # пропорция
+            image_wigth = int(aspect_ratio * image_hight)  # находит пропорцию
+            img = img.resize((image_wigth, image_hight))  # изменяем размер
+            self.image_tk = ImageTk.PhotoImage(img)
+            image_lable['image'] = self.image_tk
+
+            self.photo_image = tk.PhotoImage(file=image_file)
 
     def on_button(self, button_text: str) -> None:
         question = questions[self.question_index]
